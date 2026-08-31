@@ -1,19 +1,25 @@
 "use client";
 
 import Link from "next/link";
-
 import { Card, CardHeader, CardContent as CardBody, Input, Button, Label, Form, Select, SelectTrigger, SelectValue, SelectIndicator, SelectPopover, ListBox, ListBoxItem } from "@heroui/react";
 import { FaUser, FaEnvelope, FaLock, FaImage, FaGoogle } from "react-icons/fa";
 import Logo from "@/components/Logo";
-import { useForm } from "react-hook-form";
+import { useForm} from "react-hook-form";
+import { authClient } from "@/lib/auth-client";
+import { error } from "better-auth/api";
 
 export default function RegisterPage() {
-
-      const {register, handleSubmit, formState: {errors}} = useForm();
+      const { register, handleSubmit, control, formState: { errors } } = useForm();
 
       const onSubmit = async (data) => {
-          console.log(data);
-      }
+        //   console.log(data);
+
+         const {data: signUpData, error: signUpError} = await authClient.signUp.email({
+              ...data
+         })
+           console.log(data, signUpError)
+      };
+
     return (
         <Card className="w-full max-w-lg border border-white/5 bg-slate-950/70 backdrop-blur-xl shadow-2xl p-4">
             <CardHeader className="flex flex-col gap-1 items-center pb-6 text-center">
@@ -26,18 +32,19 @@ export default function RegisterPage() {
                 </p>
             </CardHeader>
             <CardBody className="gap-4">
-                <Form  onSubmit ={handleSubmit(onSubmit)} className="space-y-4 w-full">
+                <Form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input {...register("name", {required: "Name is required" })}
+                    <Input {...register("name", { required: "Name is required" })}
                         id="name"
                         placeholder="John Doe"
                         labelPlacement="outside"
                         startContent={<FaUser className="text-slate-400 text-sm" />}
                         className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
                     />
+
                     <Label htmlFor="email">Email Address</Label>
                     <Input
-                       {...register("email", {required: "email is required"})}
+                        {...register("email", { required: "email is required" })}
                         id="email"
                         placeholder="john@example.com"
                         type="email"
@@ -45,9 +52,10 @@ export default function RegisterPage() {
                         startContent={<FaEnvelope className="text-slate-400 text-sm" />}
                         className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
                     />
+
                     <Label htmlFor="image">Profile Image URL</Label>
                     <Input
-                        {...register("image", {required: "image is required"})}
+                        {...register("image", { required: "image is required" })}
                         id="image"
                         placeholder="https://example.com/avatar.jpg"
                         labelPlacement="outside"
@@ -57,7 +65,7 @@ export default function RegisterPage() {
 
                     <Label htmlFor="password">Password</Label>
                     <Input
-                       {...register("password", {required: "password is required", maxLength: 12, minLength: 6})}
+                        {...register("password", { required: "password is required", maxLength: 12, minLength: 6 })}
                         id="password"
                         placeholder="••••••••"
                         type="password"
@@ -67,26 +75,21 @@ export default function RegisterPage() {
                     />
 
                     <div className="flex flex-col gap-2 w-full">
-                        <Label htmlFor="role" className="text-sm font-semibold text-slate-300">Select Role</Label>
-                        <Select
-                            {...register("role", {required: "role is required"})}
-                            id="role"
-                            aria-label="Select Role"
-                            placeholder="Select Role"
-                            className="w-full"
-                        >
-                            <SelectTrigger className="w-full flex items-center justify-between bg-slate-900/50 border border-white/10 rounded-xl px-3 h-11 text-white text-sm">
-                                <SelectValue />
-                                <SelectIndicator />
-                            </SelectTrigger>
-                            <SelectPopover className="bg-slate-950 border border-white/10 rounded-xl shadow-2xl p-1 min-w-[200px]">
-                                <ListBox className="outline-none">
-                                    <ListBoxItem key="attendee" id="attendee" textValue="Attendee" className="p-2 text-white hover:bg-pink-500/20 rounded-lg cursor-pointer">Attendee (Browse & Book Tickets)</ListBoxItem>
-                                    <ListBoxItem key="organizer" id="organizer" textValue="Organizer" className="p-2 text-white hover:bg-pink-500/20 rounded-lg cursor-pointer">Organizer (Create & Host Events)</ListBoxItem>
-                                </ListBox>
-                            </SelectPopover>
-                        </Select>
-                    </div>
+                            <Label htmlFor="role" className="text-sm font-semibold text-slate-300">Select Role</Label>
+                            <select
+                                id="role"
+                                {...register("role", { required: "Role is required" })} className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500 p-3">
+                                <option value="attendee">
+                                    Attendee
+                                </option>
+                                <option value="organizer">
+                                    Organizer
+                                </option>
+                            </select>
+                            {
+                                errors.role && <p className="text-red-500">{errors.role.message}</p>
+                            }
+                        </div>
 
                     <Button
                         type="submit"
