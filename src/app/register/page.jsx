@@ -6,19 +6,46 @@ import { FaUser, FaEnvelope, FaLock, FaImage, FaGoogle } from "react-icons/fa";
 import Logo from "@/components/Logo";
 import { useForm} from "react-hook-form";
 import { authClient } from "@/lib/auth-client";
-import { error } from "better-auth/api";
+
+import { redirect } from "next/navigation";
+import toast from "react-hot-toast";
+import { uploadImage } from "@/utils/uploadImage";
+
 
 export default function RegisterPage() {
-      const { register, handleSubmit, control, formState: { errors } } = useForm();
+      const { register, handleSubmit,  formState: { errors } } = useForm();
 
-      const onSubmit = async (data) => {
-        //   console.log(data);
+     const onSubmit = async (data) => {
+        // Upload image to imgbb
+        console.log(data);
 
-         const {data: signUpData, error: signUpError} = await authClient.signUp.email({
-              ...data
-         })
-           console.log(data, signUpError)
-      };
+        const imageFile = data.image[0];
+        const imageUrl = await uploadImage(imageFile)
+        console.log(imageUrl);
+
+
+        const { data: signUpData, error: signUpError } = await authClient.signUp.email({
+            email: data.email,
+            password: data.password,
+            name: data.name,
+            image: imageUrl,
+            role: data.role
+        })
+
+
+        if(signUpError){
+              toast.error("Registration not succeed")
+        }
+        else{
+            redirect("/")
+        }
+
+        console.log(signUpData, signUpError);
+
+        
+
+
+    }
 
     return (
         <Card className="w-full max-w-lg border border-white/5 bg-slate-950/70 backdrop-blur-xl shadow-2xl p-4">
@@ -33,7 +60,9 @@ export default function RegisterPage() {
             </CardHeader>
             <CardBody className="gap-4">
                 <Form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name">Full Name
+                    
+                    </Label>
                     <Input {...register("name", { required: "Name is required" })}
                         id="name"
                         placeholder="John Doe"
@@ -41,6 +70,10 @@ export default function RegisterPage() {
                         startContent={<FaUser className="text-slate-400 text-sm" />}
                         className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
                     />
+
+                     {
+                          errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>
+                      }
 
                     <Label htmlFor="email">Email Address</Label>
                     <Input
@@ -52,7 +85,9 @@ export default function RegisterPage() {
                         startContent={<FaEnvelope className="text-slate-400 text-sm" />}
                         className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
                     />
-
+                       {
+                          errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>
+                      }
                     <Label htmlFor="image">Profile Image URL</Label>
                     <Input
                         {...register("image", { required: "image is required" })}
@@ -73,6 +108,10 @@ export default function RegisterPage() {
                         startContent={<FaLock className="text-slate-400 text-sm" />}
                         className="w-full bg-slate-900/50 border-white/10 hover:border-pink-500/50 focus-within:!border-pink-500"
                     />
+
+                     {
+                          errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>
+                      }
 
                     <div className="flex flex-col gap-2 w-full">
                             <Label htmlFor="role" className="text-sm font-semibold text-slate-300">Select Role</Label>

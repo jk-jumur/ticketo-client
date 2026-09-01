@@ -14,4 +14,20 @@ export const auth = betterAuth({
   emailAndPassword: { 
     enabled: true, 
   }, 
+
+  user: {
+      additionalFields: {
+         role: {
+            type: "string",         // Data type define kora lagbe
+            required: true,
+            defaultValue: "attendee",
+            input: true             // Client-side theke field receive korar jonno eta mandatory
+         },
+
+         isBlocked: {
+             type: "boolean",       // Boolean type define kora holo
+             defaultValue: false,
+         },
+      }
+  }
 });
